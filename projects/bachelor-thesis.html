@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bachelor Thesis — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Bachelor thesis — detecting collapsed buildings from satellite imagery using UNET++ and shadow-based heuristics, plus an honest post-mortem of what went wrong.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#475569">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/bachelor-thesis</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">09</div>
+    <h1 class="name name--proj">Bachelor Thesis</h1>
+    <p class="proj-sum">Detecting collapsed buildings with UNET++</p>
+    <div class="proj-meta">
+      <span class="status" data-status="complete">complete</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2025-06-01</span>
+      <span class="card-tags"><span>CNN</span><span>Pytorch</span><span>VertexAI</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>My bachelor's degree concluded with this project — detecting collapsed buildings using UNET++ and shadow-based heuristics from satellite imagery. It is quite expansive, so I highly recommend reading through the thesis itself if you'd like to understand it in its entirety:</p>
+
+    <div class="note">
+      <p>📄 <a href="../pdfs/Thesis_Hugo_SK.pdf">Thesis_Hugo_SK.pdf</a> — the full document.</p>
+    </div>
+
+    <hr>
+
+    <h2>Notes &amp; Reflections</h2>
+
+    <p>But I can give some notes of my own, since some time has passed since I handed this in (as of the time of writing this).</p>
+
+    <p>Firstly I would say that this thesis was a giant jump in terms of data volume and project scope from anything I had done before. I managed to cobble it together, but if I were to do it all again, much would be different:</p>
+
+    <hr>
+
+    <h2>Lessons Learned</h2>
+
+    <ul>
+      <li><strong>Trusted my predecessor too much</strong> — since someone had given a quite successful crack at it the previous year, I thought that I would simply run what they made and expand upon it. But in the end I lost lots of time trying to fix or interpret what they did, rather than pursue my own original direction.</li>
+      <li><strong>Did not analyse my data enough</strong> — sure, some graphs and distributions are shown, but I should have spent at least triple the amount of time delving deep into the images, keeping the data imbalance in mind.</li>
+      <li><strong>Got lost in my own code</strong> — having such a large scope I ended up forgetting, not understanding and/or patching together code snippets from sources which I did not fully understand. I spent significant amounts of time walking in circles just because I had not built a solid foundation of understanding.</li>
+      <li><strong>Didn't carve out a test set early</strong> — with the data volume being staggeringly high, lots was wasted on errored or faulty transformations of this dataset. More dry runs and end-to-end runs on small fragments were definitely in order.</li>
+      <li><strong>Didn't use LaTeX</strong> — it seemed too daunting and impractical, but over the last couple of months I've grown to like it and appreciate its efficiency and looks. Will definitely use Overleaf LaTeX next time.</li>
+    </ul>
+
+    <hr>
+
+    <h2>Takeaway</h2>
+
+    <p>You might read all these and think — oh my god, this dude had no idea what he was doing. And you would be right. But in the end, I learned so much from these failures and shortcomings. Every time I see a dataset, or every time I inherit some architecture or review an AI code snippet, this project comes to mind. It has taught me to be more thoughtful, careful, and most importantly — patient. Taking a step back and not rushing saves you time in the long run.</p>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="himantes.html">&larr; himantes</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

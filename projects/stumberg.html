@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stumberg — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Stumberg — a personal AI agent built on LangGraph with four modes, persistent PostgreSQL-backed conversations, file context and a dedicated search subagent.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#6366f1">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/stumberg</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">01</div>
+    <h1 class="name name--proj">Stumberg</h1>
+    <p class="proj-sum">Personal AI agent — LangGraph, four modes, persistent threads</p>
+    <div class="proj-meta">
+      <span class="status" data-status="discontinued">discontinued</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2025-12-03</span>
+      <span class="card-tags"><span>ML</span><span>Python</span><span>AI</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>Stumberg is my crown jewel. It is my largest personal project so far, and the first in this series. The original idea was to replicate the functionality of ChatGPT but tailored to my needs. I hated repeating myself all the time and trying to curb its agreeable responses, so I set out on this journey.</p>
+
+    <p>The final product was a working agent with multiple modes, persistent conversations, file context, and a search subagent, all tailored to me. Although I will admit that I have discontinued use and maintenance of the project, as the scope just grew larger and larger — upkeep of APIs, bugfixing and so on all take lots of time, time which I wanted to spend learning other new things.</p>
+
+    <p>Also the usage was not that practical: booting up a Docker container and running on localhost is not ideal. If I were to revisit this project I would definitely prioritise having CI/CD and a proper deployment pipeline.</p>
+
+    <p>The idea of Stumberg was somewhat revived in my project <a href="goswin.html">Goswin</a>.</p>
+
+    <h2>Features</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Feature</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Multi-Mode Operation</strong></td><td>Four distinct modes with tailored system prompts, model selection, and tool access</td></tr>
+        <tr><td><strong>Persistent Conversations</strong></td><td>PostgreSQL-backed state with thread-based history and automatic checkpointing</td></tr>
+        <tr><td><strong>File Context</strong></td><td>Per-conversation uploads (txt, md, py, json, pdf) injected into system prompts</td></tr>
+        <tr><td><strong>Search Subagent</strong></td><td>Dedicated subagent with web, Reddit, subreddit, and r/BuyItForLife search</td></tr>
+        <tr><td><strong>Vector Search (RAG)</strong></td><td>Pinecone-powered semantic retrieval for knowledge base querying</td></tr>
+        <tr><td><strong>Weather</strong></td><td>Real-time, location-based weather via Open-Meteo</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Modes</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Mode</th><th>Model</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Personal</strong></td><td>GPT-4o</td><td>Shopping &amp; lifestyle — Reddit + r/BuyItForLife integration</td></tr>
+        <tr><td><strong>Work</strong></td><td>GPT-4o</td><td>Factual research &amp; study — no assumptions</td></tr>
+        <tr><td><strong>Code</strong></td><td>GPT-4o</td><td>Code creation, debugging &amp; optimisation — full output, no fluff</td></tr>
+        <tr><td><strong>Fast</strong></td><td>GPT-4.1-nano</td><td>Ultra-fast, minimal responses</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Architecture</h2>
+
+    <p>A LangGraph state machine with the following flow:</p>
+
+<pre><code>Streamlit UI
+    │
+    ▼
+Agent Graph ──────────────► PostgreSQL (checkpointer)
+    │
+    ▼
+Tool routing
+    ├── Weather tool
+    ├── Vector search
+    └── Search subagent
+            ├── Web search
+            ├── Reddit search
+            ├── Subreddit search
+            └── BuyForLife search</code></pre>
+
+    <h3>Tools</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Tool</th><th>Source</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>get_weather</code></td><td>Open-Meteo API</td><td>Real-time weather data</td></tr>
+        <tr><td><code>retrieve_context</code></td><td>Pinecone</td><td>Vector search for RAG</td></tr>
+        <tr><td><code>ask_search_agent</code></td><td>Search subagent</td><td>Delegates to the specialised search tools below</td></tr>
+        <tr><td>↳ <code>general_search</code></td><td>LinkupClient</td><td>Web search</td></tr>
+        <tr><td>↳ <code>reddit_search</code></td><td>PRAW</td><td>Reddit-wide search</td></tr>
+        <tr><td>↳ <code>subreddit_search</code></td><td>PRAW</td><td>Targeted subreddit search</td></tr>
+        <tr><td>↳ <code>buyforlife_search</code></td><td>PRAW</td><td>r/BuyItForLife scraping</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Tech Stack</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Orchestration</strong></td><td>LangGraph</td></tr>
+        <tr><td><strong>LLM Framework</strong></td><td>LangChain</td></tr>
+        <tr><td><strong>UI</strong></td><td>Streamlit</td></tr>
+        <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>langgraph.checkpoint.postgres</code>)</td></tr>
+        <tr><td><strong>Models</strong></td><td>GPT-4o, GPT-4.1-nano (OpenAI)</td></tr>
+        <tr><td><strong>Vector DB</strong></td><td>Pinecone</td></tr>
+        <tr><td><strong>Web Search</strong></td><td>LinkupClient</td></tr>
+        <tr><td><strong>Reddit</strong></td><td>PRAW</td></tr>
+        <tr><td><strong>Weather</strong></td><td>Open-Meteo API</td></tr>
+        <tr><td><strong>Tracing</strong></td><td>LangSmith <em>(optional)</em></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Project Structure</h2>
+
+<pre><code>Stumberg/
+├── app.py                  # Streamlit interface
+├── main.py                 # CLI entry point
+├── graph.py                # LangGraph agent graph
+├── models.py               # Model configurations
+├── prompts.py              # Mode-specific system prompts
+├── schema.py               # AgentState definition
+├── tools/
+│   ├── search.py           # Search tool implementations
+│   ├── weather.py          # Weather tool
+│   └── vector_search.py    # Pinecone integration
+├── subagents/
+│   └── search_subagent.py  # Search delegation subgraph
+├── middleware/
+│   └── call_wrapping.py    # Call wrapping utilities
+├── RAG_building_scripts/   # Vector store build utilities
+├── Dockerfile
+├── requirements.txt
+├── langgraph.json          # LangGraph deployment config
+└── ROADMAP.md</code></pre>
+
+    <hr>
+
+    <h2>Getting Started</h2>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Python 3.10+</li>
+      <li>PostgreSQL</li>
+      <li>OpenAI API key</li>
+    </ul>
+
+    <h3>Install</h3>
+<pre><code>pip install -r requirements.txt</code></pre>
+
+    <h3>Configure</h3>
+    <p>Create a <code>.env</code> file:</p>
+<pre><code># Required
+OPENAI_API_KEY=your_key
+DB_URI=postgresql://user:password@host:port/database
+
+# Optional
+PINECONE_API_KEY=your_key
+LINKUP_API_KEY=your_key
+LANGCHAIN_API_KEY=your_key
+LANGCHAIN_PROJECT=your_project
+CONVERSATION_DATA_PATH=/path/to/conversation/data</code></pre>
+
+    <h3>Run</h3>
+<pre><code># Streamlit UI
+streamlit run app.py
+
+# CLI
+python main.py</code></pre>
+
+    <h3>Docker</h3>
+<pre><code>docker build -t stumberg-agent .
+docker run -p 8501:8501 \
+  -v /path/to/data:/host_e/conversation_data \
+  --env-file .env \
+  stumberg-agent</code></pre>
+
+    <hr>
+
+    <h2>License</h2>
+    <p>Personal use and experimentation.</p>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="simurgh.html">simurgh &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

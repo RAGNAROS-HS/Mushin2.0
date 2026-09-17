@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Himantes — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Himantes — an abandoned multi-label Pokémon type classifier in PyTorch. A working pipeline that never generalised, and the post-mortem on why.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#db2777">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/himantes</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">08</div>
+    <h1 class="name name--proj">Himantes</h1>
+    <p class="proj-sum">Pokémon type classifier and generator</p>
+    <div class="proj-meta">
+      <span class="status" data-status="abandoned">abandoned</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2026-01-22</span>
+      <span class="card-tags"><span>CNN</span><span>GAN</span><span>PyTorch</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p><strong>STATUS: ABANDONED</strong></p>
+
+    <blockquote>
+      <p><strong>Post-mortem:</strong> this project has been discontinued. While a functional classification pipeline was established, the model struggled to generalise effectively. The primary blockers were:</p>
+      <ol>
+        <li><strong>High-variance anatomy</strong> — Pokémon designs exhibit extreme morphological diversity within the same type (e.g. <em>Charmander</em> vs. <em>Torkoal</em>), making visual patterns difficult for a standard CNN to capture without massive data.</li>
+        <li><strong>Insufficient data</strong> — the available dataset provided too few examples per class to overcome the high variance, likely leading to overfitting or poor feature representation.</li>
+      </ol>
+    </blockquote>
+
+    <h2>Project Overview</h2>
+
+    <p>This project aimed to build a deep learning system to classify Pokémon types from images using PyTorch and Hugging Face's <code>datasets</code>. The goal was to train a custom CNN to predict up to two types for a given Pokémon image.</p>
+
+    <h2>Implemented Features</h2>
+
+    <h3>1. Data pipeline &amp; analysis</h3>
+    <ul>
+      <li><strong>Integration</strong>: integrated the <code>pranavs28/pokemon_types</code> dataset.</li>
+      <li><strong>Distribution analysis</strong>: mapped class imbalances using <code>analyze_distribution.py</code> to understand the prevalence of types like Water/Normal vs. rarer types like Ice/Ghost.</li>
+      <li><strong>Normalisation</strong>: calculated custom normalisation statistics (mean/std) specifically for this dataset using <code>normalization_calculator.py</code> to ensure optimal model convergence.
+        <ul>
+          <li>Mean: <code>[0.8412, 0.8291, 0.8151]</code></li>
+          <li>Std: <code>[0.2417, 0.2473, 0.2593]</code></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>2. Model architecture</h3>
+    <ul>
+      <li><strong>Custom CNN</strong>: a 6-layer convolutional neural network with
+        <ul>
+          <li>adaptive average pooling <code>(4,4)</code> to handle spatial feature variations,</li>
+          <li>dropout (<code>0.5</code>) in fully connected layers to mitigate overfitting.</li>
+        </ul>
+      </li>
+      <li><strong>Multi-label support</strong>: designed for 18 distinct types using a multi-hot encoding scheme.</li>
+    </ul>
+
+    <h3>3. Training strategy (<code>classifier_training.py</code>)</h3>
+    <ul>
+      <li><strong>Loss function</strong>: <code>BCEWithLogitsLoss</code> with <strong>calculated class weights</strong> (<code>pos_weights</code>) to counter the significant dataset imbalance (e.g. Water types being much more common than Ice).</li>
+      <li><strong>Optimiser</strong>: SGD with momentum (<code>0.9</code>) for stable convergence.</li>
+      <li><strong>Artifacts</strong>: saves the best model state to <code>pokemon_classifier.pth</code>.</li>
+    </ul>
+
+    <h3>4. Inference &amp; visualisation (<code>run_classifier.py</code>)</h3>
+    <ul>
+      <li><strong>Preprocessing</strong>: robust pipeline resizing images to 512×512 and applying the calculated normalisation.</li>
+      <li><strong>Inference engine</strong>: loads the trained model and applies threshold-based prediction logic.</li>
+      <li><strong>Visualiser</strong>: uses <code>extract_types()</code> and Matplotlib to display side-by-side comparisons of ground truth vs. predicted types.</li>
+    </ul>
+
+    <h2>Project Structure</h2>
+
+<pre><code>Himantes/
+├── classifier_training.py      # Main training script (model definition + training loop)
+├── run_classifier.py           # Inference script for visualisation and testing
+├── analyze_distribution.py     # Utility to analyse dataset class distribution
+├── normalization_calculator.py # Script to compute dataset mean/std
+├── requirements.txt            # Project dependencies
+└── README.md                   # Project documentation</code></pre>
+
+    <h2>Dependencies</h2>
+    <ul>
+      <li><code>torch</code> (PyTorch)</li>
+      <li><code>datasets</code> (Hugging Face)</li>
+      <li><code>torchvision</code></li>
+      <li><code>matplotlib</code></li>
+      <li><code>numpy</code></li>
+    </ul>
+
+    <h2>Usage (Historical)</h2>
+
+    <h3>1. Train the model</h3>
+<pre><code>python classifier_training.py</code></pre>
+
+    <h3>2. Run inference (visualise results)</h3>
+<pre><code>python run_classifier.py</code></pre>
+
+    <h3>3. Utilities</h3>
+<pre><code>python normalization_calculator.py
+python analyze_distribution.py</code></pre>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="mushin.html">&larr; mushin</a>
+    <a href="bachelor-thesis.html">bachelor-thesis &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jadid Halghe — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Jadid Halghe — deep reinforcement learning agents for an agar.io clone. Vectorised NumPy game engine, attention policy over entity sets, PPO with a self-play curriculum.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#7c3aed">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/jadid-halghe</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">04</div>
+    <h1 class="name name--proj">Jadid Halghe</h1>
+    <p class="proj-sum">Teaching RL agents to dominate an agar.io clone</p>
+    <div class="proj-meta">
+      <span class="status" data-status="active">active</span>
+      <span class="tool" data-tool="claude-code">claude-code</span>
+      <span>2026-04-05</span>
+      <span class="card-tags"><span>RL</span><span>Python</span><span>PyTorch</span><span>Game Engine</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>Teaching AI agents to dominate an agar.io clone through deep reinforcement learning. Built from scratch in Python and PyTorch — game engine, RL environment, policy architecture, training loop, and evaluation harness.</p>
+
+    <hr>
+
+    <h2>The Problem</h2>
+
+    <p>Agar.io is a surprisingly rich environment for RL research. At any moment an agent must:</p>
+    <ul>
+      <li><strong>Navigate</strong> a continuous 2D space toward food while avoiding larger enemies</li>
+      <li><strong>Decide when to split</strong> — doubling mobility at the cost of becoming individually smaller and harder to control</li>
+      <li><strong>Reason about mass ratios</strong> — you can only eat entities smaller than 1/1.21 of your own mass, and be eaten by anything bigger</li>
+      <li><strong>Manage multiple bodies</strong> — a split player controls up to 16 simultaneous cells, each moving toward the same cursor target but following independent physics</li>
+    </ul>
+
+    <p>This creates a non-trivial partial-observability problem: the world is large, entities are numerous, and the optimal action depends on continuous mass comparisons across a variable-size entity set.</p>
+
+    <hr>
+
+    <h2>Game Engine</h2>
+
+    <p>The first challenge was building a simulation fast enough for RL training. A naive Python implementation of agar.io — looping over entities in Python, checking collisions one-by-one — runs at roughly 50 ticks/sec. That's playable, but training PPO to 10M steps would take weeks.</p>
+
+    <p>The solution is to represent every entity type as a <strong>contiguous NumPy array</strong> and express all game logic as vectorised operations over those arrays.</p>
+
+    <h3>Entity model</h3>
+
+<pre><code>CellArrays:    pos[N,2]  mass[N]  vel[N,2]  split_vel[N,2]  owner[N]  alive[N]
+FoodArrays:    pos[F,2]  (compact layout — no gaps, swap-with-last on free)
+VirusArrays:   pos[V,2]  mass[V]
+EjectedArrays: pos[E,2]  vel[E,2]  owner[E]  settle_timer[E]</code></pre>
+
+    <p>Dead slots are recycled through a free-list <code>deque</code>. Allocation and deallocation only happen at discrete events (splits, deaths, spawns) — never in the hot collision path, which reads and writes only the <code>pos[0:n_alive]</code> slice.</p>
+
+    <h3>Collision detection</h3>
+
+    <p>Eating uses <strong>O(n²) NumPy broadcasting</strong> over the alive-cell subset:</p>
+
+<pre><code># Both conditions must hold simultaneously:
+# 1. mass_A &gt; 1.21 × mass_B  (eat_ratio² avoids two sqrt calls per pair)
+# 2. distance(center_A, center_B) &lt; radius_A</code></pre>
+
+    <p>The 1.21× threshold comes from squaring the 1.1× radius ratio, which avoids computing <code>sqrt(mass)</code> for every pair — a meaningful saving when cells number in the hundreds.</p>
+
+    <p>For mass accumulation after eating, <code>np.add.at</code> handles the case where one predator eats multiple prey in the same tick. It's slower than <code>+=</code> but correct when indices repeat.</p>
+
+    <h3>Physics</h3>
+
+    <p>Speed scales inversely with mass: <code>base_speed / mass^0.439</code>. This means small cells are fast and nimble; large cells are slow and vulnerable. At start mass 2500, a cell moves ~26 units per tick (at 25 TPS). The formula is applied elementwise across all alive cells in one vectorised call.</p>
+
+    <p>Split momentum lives in a separate <code>split_vel</code> array, which decays by a multiplier each tick. The position update sums both:</p>
+
+<pre><code>cell_pos += (cell_vel + cell_split_vel) * dt
+cell_split_vel *= split_decay</code></pre>
+
+    <p>This keeps the steering velocity (<code>cell_vel</code>) clean — it's overwritten every tick from the action input — while preserving split momentum across ticks.</p>
+
+    <h3>Throughput</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Scenario</th><th class="num">TPS</th></tr></thead>
+      <tbody>
+        <tr><td>2 players / 500 food</td><td class="num">~4 300</td></tr>
+        <tr><td>4 players / 1 000 food</td><td class="num">~4 000</td></tr>
+        <tr><td>8 players / 2 000 food</td><td class="num">~3 500</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Single-world throughput is bottlenecked by Python dispatch overhead (~3 µs × ~25 NumPy calls/tick = ~75 µs floor), not computation. The 10k agent-steps/sec training target is reached by running 3 independent worlds in parallel via <code>VecAgarEnv</code>.</p>
+
+    <hr>
+
+    <h2>RL Environment</h2>
+
+    <p>The game engine exposes <code>world.step(actions) → (rewards, dones, info)</code> and <code>world.get_state()</code> as separate calls. Keeping state serialisation out of the tick loop saves ~15% of tick time in training.</p>
+
+    <h3>Observation design</h3>
+
+    <p>The core challenge is encoding a variable-size entity set into a fixed-size vector for the neural network. The solution: <strong>ego-centric K-nearest-neighbour groups</strong>.</p>
+
+    <p>From the agent's centroid, we collect:</p>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Group</th><th class="num">K</th><th>Features per entity</th></tr></thead>
+      <tbody>
+        <tr><td>Own cells</td><td class="num">16</td><td><code>(rel_x, rel_y, log_mass_norm)</code></td></tr>
+        <tr><td>Food</td><td class="num">20</td><td><code>(rel_x, rel_y)</code></td></tr>
+        <tr><td>Viruses</td><td class="num">10</td><td><code>(rel_x, rel_y)</code></td></tr>
+        <tr><td>Threat enemies</td><td class="num">10</td><td><code>(rel_x, rel_y, delta_log_mass)</code></td></tr>
+        <tr><td>Prey enemies</td><td class="num">10</td><td><code>(rel_x, rel_y, delta_log_mass)</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Total: <strong>170 float32 features</strong>.</p>
+
+    <p>The threat/prey split is deliberate. Enemy cells are classified at observation-build time — threats (larger than self) get <code>delta_log_mass &gt; 0</code>, prey (smaller) get <code>delta_log_mass &lt;= 0</code>. This means the network never needs to learn a subtraction to distinguish them; the sign of the mass feature carries that information directly.</p>
+
+    <p>All positions are divided by <code>max(width, height) / 2</code> and clipped to <code>[-10, 10]</code>. Log-mass features use <code>log(mass / start_mass + 1e-6) / 5</code>.</p>
+
+    <h3>Action space</h3>
+
+    <p>Continuous: <code>Box([-1,-1,-1,-1], [1,1,1,1])</code>. The first two dimensions encode a movement direction, projected to a world-space cursor position as <code>target = centroid + direction × large_scale</code>. Split and eject are thresholded at 0 — a positive logit fires the action.</p>
+
+    <p>The pre-tanh sample <code>z</code> is stored in the rollout buffer rather than the squashed action <code>tanh(z)</code>. This ensures the Jacobian correction in the log-probability calculation is exact, and avoids numerical issues from inverting tanh near ±1.</p>
+
+    <h3>Reward function</h3>
+
+<pre><code>reward = Δ(own_mass) / start_mass
+       + survival_bonus per tick (0.01)
+       - player_mass / reward_scale on death</code></pre>
+
+    <p>The death penalty scales with current mass so that dying is always a net loss regardless of how large the agent has grown. Without this, an agent that grew very large could benefit from dying (resetting to start mass and collecting food again). The survival bonus at 0.01 equals <code>food_mass / start_mass</code> — roughly one food pellet per tick in value.</p>
+
+    <hr>
+
+    <h2>Policy Architecture</h2>
+
+    <h3>Baseline: MLP</h3>
+
+    <p>A flat 3-layer MLP (256 → 128) over the 170-dim observation. Shared encoder, separate actor mean head, shared <code>log_std</code> parameter and critic head. Orthogonal initialisation throughout (gain √2; output heads: 0.01 for actor, 1.0 for critic — standard PPO practice).</p>
+
+    <h3>Primary: attention policy</h3>
+
+    <p>The MLP treats all 170 features as a flat vector, losing the natural entity structure. The attention policy exploits it.</p>
+
+    <p>Each entity group is projected to a common <code>embed_dim=64</code> with a learned type embedding added:</p>
+
+<pre><code>own_emb  = own_proj(own_tokens)   + type_emb[0]   # (B, 16, 64)
+food_emb = food_proj(food_tokens) + type_emb[1]   # (B, 20, 64)
+...
+tokens = cat([own_emb, food_emb, virus_emb, threat_emb, prey_emb], dim=1)  # (B, 66, 64)</code></pre>
+
+    <p>A 2-layer Pre-LN <code>TransformerEncoder</code> (4 heads) then attends over all 66 entity slots. Pre-LayerNorm (<code>norm_first=True</code>) gives more stable training than post-LN.</p>
+
+    <p>Zero-padded slots (fewer than K entities present) are masked in the attention computation. The output is mean-pooled over real tokens only:</p>
+
+<pre><code>n_real = is_real.float().sum(-1, keepdim=True).clamp(min=1.0)
+pooled = (out * is_real.unsqueeze(-1).float()).sum(1) / n_real</code></pre>
+
+    <p>The two global scalar features (log total mass, cell count fraction) are concatenated to the pooled representation before the actor and critic heads.</p>
+
+    <h3>Attention visualisation</h3>
+
+    <p><code>AttentionPolicy.attention_maps(obs)</code> manually steps through each transformer layer, calling <code>MultiheadAttention</code> with <code>need_weights=True, average_attn_weights=False</code> to extract per-head weights. This is displayed as a glow overlay in the live renderer — entities that receive high attention get a halo sized proportionally to their attention weight.</p>
+
+<pre><code>python main.py --checkpoint ckpt.pt --attention-viz</code></pre>
+
+    <p>The inference runs once per simulation tick (25 Hz) and is cached; the renderer reads it at 60 Hz. This keeps expensive network inference out of the render path.</p>
+
+    <h3>Recurrent option</h3>
+
+    <p><code>RecurrentPolicy</code> wraps an MLP encoder with a GRU hidden state, threading <code>(hidden_state_in, hidden_state_out)</code> through each <code>act()</code> call. Useful for partial-observability experiments where entity history matters.</p>
+
+    <hr>
+
+    <h2>Training</h2>
+
+    <h3>PPO</h3>
+
+    <p>Standard clipped surrogate objective with GAE:</p>
+
+<pre><code>L = L_clip + c_v · L_value - c_e · L_entropy
+
+L_clip = E[min(r·A, clip(r, 1±ε)·A)]</code></pre>
+
+    <p>Advantages are computed with GAE (λ=0.95) and normalised per rollout. The rollout buffer is pre-allocated (<code>T × N</code> tensors) — no per-step allocation in the collect loop.</p>
+
+    <p>Key hyperparameters:</p>
+
+    <div class="tbl">
+    <table>
+      <tbody>
+        <tr><th>Rollout length</th><td class="num">512 steps/env</td></tr>
+        <tr><th>Parallel envs</th><td class="num">4</td></tr>
+        <tr><th>Minibatch size</th><td class="num">256</td></tr>
+        <tr><th>Epochs per rollout</th><td class="num">4</td></tr>
+        <tr><th>Clip range ε</th><td class="num">0.2</td></tr>
+        <tr><th>Entropy bonus</th><td class="num">0.01</td></tr>
+        <tr><th>Learning rate</th><td class="num">3e-4</td></tr>
+        <tr><th>Total steps</th><td class="num">10M</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Self-play curriculum</h3>
+
+    <p>Standard PPO against random bots hits a ceiling quickly — the agent learns to eat food and avoid naive opponents, but never develops the split-timing and positional play needed against skilled opposition.</p>
+
+    <p>The solution is <code>OpponentPool</code>: a ring buffer of past policy snapshots. Every 50 rollouts, the current policy is saved to the pool (max 20 snapshots). During rollout collection, ~80% of episodes use a randomly sampled past snapshot as the bot opponent; 20% use random walk to preserve diversity.</p>
+
+<pre><code>selfplay:
+  pool_size: 20
+  update_interval: 50   # rollouts between snapshots
+  selfplay_prob: 0.8</code></pre>
+
+    <p>Policies are lazily loaded on first use and replaced when their ring slot is overwritten (GC collects the old instance). Bot opponents are hot-swapped between rollouts via <code>VecAgarEnv.set_bot_policy()</code> without reconstructing environments.</p>
+
+    <p>The pool starts empty — opponents are random-walk bots until rollout 50. This bootstraps basic competence before self-play begins.</p>
+
+    <h2>Training Progression</h2>
+
+    <div class="figs">
+      <figure class="fig">
+        <img loading="lazy" src="../img/first50.gif" alt="Agents at rollout 50, moving randomly">
+        <figcaption><strong>Rollout 50 — early exploration.</strong> As you can see, at first the blobs move rather randomly, with little regard for food or viruses. They also split for no reason.</figcaption>
+      </figure>
+      <figure class="fig">
+        <img loading="lazy" src="../img/first1000.gif" alt="Agents at rollout 1000, fleeing each other">
+        <figcaption><strong>Rollout 1000 — emerging strategy.</strong> Here we see blobs running away from one another; they possess a strong sense of danger when others are nearby.</figcaption>
+      </figure>
+      <figure class="fig">
+        <img loading="lazy" src="../img/first1500.gif" alt="Agents at rollout 1500, hunting and scavenging">
+        <figcaption><strong>Rollout 1500 — mature policy.</strong> At this stage we see clear patterns of larger blobs hunting smaller ones, independent food scavenging and even the odd split in an attempt to hunt.</figcaption>
+      </figure>
+    </div>
+
+    <h2>Evaluation</h2>
+
+    <h3>Baselines</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Policy</th><th>Behaviour</th></tr></thead>
+      <tbody>
+        <tr><td><code>RandomPolicy</code></td><td>Uniform random actions each tick</td></tr>
+        <tr><td><code>GreedyPolicy</code></td><td>Chase nearest edible enemy or food; flee nearest threat</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Elo tournament</h3>
+
+    <p>To measure progress across training, <code>eval/elo.py</code> runs a round-robin tournament across checkpoint history. Each unordered pair <code>(A, B)</code> plays <code>episodes_per_pair</code> games in both directions (A as eval agent against B as bot, and vice versa) to cancel map-position advantage.</p>
+
+    <p>Win/loss/draw is determined by final mass rank. Elo updates use the standard formula:</p>
+
+<pre><code>E_A = 1 / (1 + 10^((R_B − R_A) / 400))
+R_A' = R_A + K · (score_A − E_A)</code></pre>
+
+    <p>Policies are loaded pair-by-pair and freed immediately after their games — the full checkpoint history never needs to be in memory simultaneously.</p>
+
+    <h3>Replay &amp; visualisation</h3>
+
+    <p>Episodes can be saved to disk as <code>ReplayEpisode</code> objects (trajectory arrays) and replayed in the Pygame renderer at arbitrary speed. A mass-over-time plot is also available per episode via matplotlib.</p>
+
+    <hr>
+
+    <h2>Test Coverage</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Module</th><th class="num">Tests</th></tr></thead>
+      <tbody>
+        <tr><td>Game mechanics</td><td class="num">34</td></tr>
+        <tr><td>RL environment</td><td class="num">23</td></tr>
+        <tr><td>Agent / policy</td><td class="num">24</td></tr>
+        <tr><td>Training loop</td><td class="num">12</td></tr>
+        <tr><td>Evaluation harness</td><td class="num">34</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Tests cover eating rules, split physics, merge timer, boundary clamping, mass conservation, no-NaN guarantees, environment determinism, and PPO convergence on a small synthetic problem.</p>
+
+    <hr>
+
+    <h2>Stack</h2>
+
+    <p>Python 3.12 · PyTorch 2.x · NumPy · Gymnasium · PettingZoo · Pygame-CE · TensorBoard · Ruff</p>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="zamin.html">&larr; zamin</a>
+    <a href="tosach.html">tosach &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

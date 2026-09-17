@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goswin — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Goswin — n8n workflow automation, deliberately kept off GitHub because the workflow backups carry sensitive data.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#374151">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/goswin</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">06</div>
+    <h1 class="name name--proj">Goswin</h1>
+    <p class="proj-sum">n8n workflow automation, kept off GitHub</p>
+    <div class="proj-meta">
+      <span class="status" data-status="active">active</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2026-01-10</span>
+      <span class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>You might notice this one is not listed on my GitHub, and for good reason. In other projects there exist either no personal data or keys, or I am able to keep them in a <code>.gitignore</code>'d <code>.env</code> file. This is not the case with Goswin, as it contains raw JSON backups of my n8n workflows, which contain sensitive data.</p>
+
+    <p>I will populate this file with explanations of my creations later down the line. Stay tuned!</p>
+
+    <div class="note">
+      <p>Goswin is the spiritual successor to <a href="stumberg.html">Stumberg</a> — the same "an assistant shaped like me" idea, rebuilt on hosted workflow automation instead of a self-run LangGraph container.</p>
+    </div>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="tosach.html">&larr; tosach</a>
+    <a href="mushin.html">mushin &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mushin — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Mushin — the personal site and portfolio at hugokatzer.tech, built with Hugo and deployed to a Cloudpanel VPS over SFTP from GitHub Actions.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#b45309">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/mushin</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">07</div>
+    <h1 class="name name--proj">Mushin</h1>
+    <p class="proj-sum">This very website</p>
+    <div class="proj-meta">
+      <span class="status" data-status="active">active</span>
+      <span class="tool" data-tool="claude-code">claude-code</span>
+      <span>2026-02-23</span>
+      <span class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>Will write about it once I'm done.</p>
+
+    <hr>
+
+    <p>In the meantime, the shape of it: Mushin is the source for the personal website and portfolio at <a href="https://hugokatzer.tech/">hugokatzer.tech</a>. It uses <strong>Hugo</strong> for static site generation, chosen for its speed and markdown-native approach — which lines up neatly with GitHub README files, so writing can be cross-posted rather than rewritten.</p>
+
+    <h2>Sections</h2>
+    <ul>
+      <li><strong>Home</strong> — brief introduction and profile</li>
+      <li><strong>Projects</strong> — portfolio of work and research (MSc AI projects, theses)</li>
+      <li><strong>Devlog</strong> — development logs and updates</li>
+      <li><strong>About me</strong> — background information</li>
+    </ul>
+
+    <h2>Local Development</h2>
+
+    <p>Requirements: Hugo installed.</p>
+
+<pre><code># clone
+git clone https://github.com/RAGNAROS-HS/Mushin.git &amp;&amp; cd Mushin
+
+# run locally, available at localhost:1313
+hugo server -D
+
+# build production output into public/
+hugo
+
+# create content
+hugo new content/devlog/my-new-post.md</code></pre>
+
+    <h2>Deployment</h2>
+
+    <p>The site runs on a Cloudpanel VPS with automated SFTP deployment via GitHub Actions on every push to <code>main</code>.</p>
+
+    <div class="note">
+      <p><em>Mushin 2.0</em> — the site you are reading now — is a hand-rolled, build-step-free rework of the same material in plain HTML, CSS and one file of vanilla JavaScript. No Hugo, no theme, no generator.</p>
+    </div>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="goswin.html">&larr; goswin</a>
+    <a href="himantes.html">himantes &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

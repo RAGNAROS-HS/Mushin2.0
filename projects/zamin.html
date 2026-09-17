@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zamin — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Zamin — housing price prediction on the Boston Housing dataset three ways: hand-coded gradient descent, a Keras network, and an evolutionary algorithm.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#059669">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/zamin</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">03</div>
+    <h1 class="name name--proj">Zamin</h1>
+    <p class="proj-sum">Back to basics: ML algorithms written from scratch</p>
+    <div class="proj-meta">
+      <span class="status" data-status="active">active</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2026-02-11</span>
+      <span class="card-tags"><span>NN</span><span>Python</span><span>Linear Regression</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <p>This project explores <strong>housing price prediction</strong> on the Boston Housing dataset using multiple approaches — from hand-coded gradient descent to deep learning — to understand the fundamentals of regression at every level of abstraction.</p>
+
+    <h2>Dataset</h2>
+
+    <p><strong>Source:</strong> <a href="https://www.kaggle.com/datasets/altavish/boston-housing-dataset">Boston Housing (Kaggle)</a></p>
+
+    <ul>
+      <li><strong>506 samples</strong>, <strong>13 features</strong>, <strong>1 target</strong> (<code>MEDV</code> — median home value in $1000s)</li>
+      <li><strong>Train/test split:</strong> 80/20 (random state 42)</li>
+      <li><strong>Preprocessing:</strong> z-score standardisation (mean/std computed on the train set only, applied to both)</li>
+    </ul>
+
+    <h3>Features</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Feature</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>CRIM</code></td><td>Per capita crime rate by town</td></tr>
+        <tr><td><code>ZN</code></td><td>Proportion of residential land zoned for lots &gt; 25k sqft</td></tr>
+        <tr><td><code>INDUS</code></td><td>Proportion of non-retail business acres per town</td></tr>
+        <tr><td><code>CHAS</code></td><td>Charles River dummy variable (1 if tract bounds river)</td></tr>
+        <tr><td><code>NOX</code></td><td>Nitric oxide concentration (parts per 10 million)</td></tr>
+        <tr><td><code>RM</code></td><td>Average number of rooms per dwelling</td></tr>
+        <tr><td><code>AGE</code></td><td>Proportion of owner-occupied units built pre-1940</td></tr>
+        <tr><td><code>DIS</code></td><td>Weighted distances to five Boston employment centres</td></tr>
+        <tr><td><code>RAD</code></td><td>Index of accessibility to radial highways</td></tr>
+        <tr><td><code>TAX</code></td><td>Full-value property tax rate per $10,000</td></tr>
+        <tr><td><code>PTRATIO</code></td><td>Pupil-teacher ratio by town</td></tr>
+        <tr><td><code>B</code></td><td>1000(Bk − 0.63)² where Bk is the proportion of Black residents</td></tr>
+        <tr><td><code>LSTAT</code></td><td>Percentage lower status of the population</td></tr>
+        <tr><td><strong>MEDV</strong></td><td><strong>Median value of owner-occupied homes ($1000s) — target</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr>
+
+    <h2>Dataset Analysis</h2>
+
+    <h3>Feature distributions</h3>
+
+    <p>Histograms for all 14 variables in the dataset:</p>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/CRIM.png" alt="CRIM distribution"><figcaption>CRIM</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/ZN.png" alt="ZN distribution"><figcaption>ZN</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/INDUS.png" alt="INDUS distribution"><figcaption>INDUS</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/CHAS.png" alt="CHAS distribution"><figcaption>CHAS</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/NOX.png" alt="NOX distribution"><figcaption>NOX</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/RM.png" alt="RM distribution"><figcaption>RM</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/AGE.png" alt="AGE distribution"><figcaption>AGE</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/DIS.png" alt="DIS distribution"><figcaption>DIS</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/RAD.png" alt="RAD distribution"><figcaption>RAD</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/TAX.png" alt="TAX distribution"><figcaption>TAX</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/PTRATIO.png" alt="PTRATIO distribution"><figcaption>PTRATIO</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/B.png" alt="B distribution"><figcaption>B</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/LSTAT.png" alt="LSTAT distribution"><figcaption>LSTAT</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/MEDV.png" alt="MEDV distribution"><figcaption>MEDV (target)</figcaption></figure>
+    </div>
+
+    <h3>Correlation analysis</h3>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/corr_heatmap.png" alt="Correlation heatmap"><figcaption>Standard correlation heatmap</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/corr_clustermap.png" alt="Correlation clustermap"><figcaption>Hierarchical clustered correlation map</figcaption></figure>
+    </div>
+
+    <p><strong>Key correlations with MEDV (target):</strong></p>
+    <ul>
+      <li><strong>Strong positive:</strong> <code>RM</code> (rooms) — more rooms → higher price</li>
+      <li><strong>Strong negative:</strong> <code>LSTAT</code> (lower status %) — higher LSTAT → lower price</li>
+      <li><strong>Notable negatives:</strong> <code>PTRATIO</code>, <code>INDUS</code>, <code>TAX</code>, <code>CRIM</code></li>
+    </ul>
+
+    <hr>
+
+    <h2>Methods Implemented</h2>
+
+    <h3>1. Gradient descent — linear regression from scratch (<code>rawRun.py</code>)</h3>
+
+    <p>A <strong>pure NumPy</strong> implementation with no ML library abstractions:</p>
+    <ul>
+      <li>Manual weight initialisation (<code>w ~ N(0, 0.01)</code>, <code>b = 0</code>)</li>
+      <li>MSE loss with analytical gradient computation</li>
+      <li>Convergence tolerance check (<code>tol = 1e-4</code>)</li>
+      <li><strong>Hyperparameters:</strong> <code>α = 0.001</code>, <code>epochs = 1200</code></li>
+    </ul>
+
+<pre><code># Core update rule (no libraries)
+dw = (2 / m) * X_train.T @ (y_pred - y_train)
+db = (2 / m) * sum(y_pred - y_train)
+w -= α * dw
+b -= α * db</code></pre>
+
+    <h3>2. Neural network — Keras/TensorFlow (<code>NeuralNetwork.py</code>)</h3>
+
+    <p>A <strong>3-hidden-layer</strong> dense network trained with the Adam optimiser:</p>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Layer</th><th class="num">Units</th><th>Activation</th></tr></thead>
+      <tbody>
+        <tr><td>Input</td><td class="num">13</td><td>—</td></tr>
+        <tr><td>Hidden 1</td><td class="num">22</td><td>ReLU</td></tr>
+        <tr><td>Hidden 2</td><td class="num">22</td><td>ReLU</td></tr>
+        <tr><td>Hidden 3</td><td class="num">22</td><td>ReLU</td></tr>
+        <tr><td>Output</td><td class="num">1</td><td>Linear</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <ul>
+      <li><strong>Total parameters:</strong> 1,343</li>
+      <li><strong>Optimiser:</strong> Adam</li>
+      <li><strong>Loss:</strong> MSE</li>
+      <li><strong>Batch size:</strong> 32, <strong>epochs:</strong> 50 (with early stopping, patience 20)</li>
+    </ul>
+
+    <h3>3. Evolutionary algorithm (work in progress)</h3>
+
+    <p>Scaffolded in <code>EvolutionaryAlgorithm.py</code> — evolves neural network weights using:</p>
+    <ul>
+      <li><strong>Tournament selection</strong> (k=3)</li>
+      <li><strong>Gaussian mutation</strong> (per-gene with configurable rate and sigma)</li>
+      <li><strong>Uniform crossover</strong> (per-gene swap with configurable rate)</li>
+    </ul>
+
+    <blockquote>
+      <p>⚠️ <strong>Status:</strong> skeleton implemented — <code>fitness()</code>, <code>ea_training_loop()</code> and <code>mutation()</code> are stubbed and awaiting completion.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>Results Comparison</h2>
+
+    <h3>Metrics</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Metric</th><th class="num">Gradient descent (linear)</th><th class="num">Neural network (Keras)</th><th class="num">Evolutionary algorithm</th></tr></thead>
+      <tbody>
+        <tr><th>MSE</th><td class="num">32.406</td><td class="num">12.957</td><td class="num">101.712</td></tr>
+        <tr><th>RMSE</th><td class="num">5.692</td><td class="num">3.599</td><td class="num">10.085</td></tr>
+        <tr><th>MAE</th><td class="num">3.378</td><td class="num">2.399</td><td class="num">7.748</td></tr>
+        <tr><th>R²</th><td class="num">0.558</td><td class="num">0.823</td><td class="num">−0.387</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Training loss curves</h3>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/gd_loss.png" alt="Gradient descent loss curve"><figcaption>Gradient descent MSE convergence over ~1200 epochs</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/nn_loss.png" alt="Neural network loss curve"><figcaption>NN train/validation loss over ~50 epochs (with early stopping)</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/ea_loss.png" alt="Evolutionary algorithm fitness curve"><figcaption>EA fitness convergence over 50 generations</figcaption></figure>
+    </div>
+
+    <h3>Test set predictions — actual vs predicted</h3>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/test_scatter.png" alt="Gradient descent predictions scatter"><figcaption>Gradient descent predictions</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/nn_test_scatter.png" alt="Neural network predictions scatter"><figcaption>Neural network predictions</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/ea_test_scatter.png" alt="Evolutionary algorithm predictions scatter"><figcaption>Evolutionary algorithm predictions</figcaption></figure>
+    </div>
+
+    <p>Points closer to the red dashed line (y = x) indicate better predictions. The neural network shows tighter clustering around the ideal line, especially in the mid-range values.</p>
+
+    <hr>
+
+    <h2>Project Structure</h2>
+
+<pre><code>Zamin/
+├── rawRun.py                 # Gradient descent linear regression (from scratch)
+├── NeuralNetwork.py          # Neural network with Keras/TensorFlow
+├── EvolutionaryAlgorithm.py  # Evolutionary algorithm for NN weight optimisation
+├── dataPreProcess.py         # Dataset visualisation &amp; correlation analysis
+├── housing.csv               # Boston Housing dataset (506 × 14)
+├── stickyNote.txt            # Project notes &amp; core concepts
+└── output/
+    ├── dataanalysis/         # Histograms, heatmaps, correlation plots
+    ├── linearreg/            # GD loss curves &amp; scatter plots
+    ├── nn/                   # NN loss curves, scatter plots &amp; saved models
+    └── ea/                   # EA convergence &amp; prediction plots</code></pre>
+
+    <hr>
+
+    <h2>Key Takeaways</h2>
+
+    <p>The evolutionary algorithm failed spectacularly, I was rather surprised. I was expecting it to fall a bit short, but not underperform to this extent. Linear regression and the NN were a delight however — solid scores with very simple setups. I found the NN topology taken from the study to be straightforward to implement and logical.</p>
+
+    <h2>Future Work</h2>
+
+    <p>Lots of things could be improved: first and foremost add ridge regression to the linear algorithm, and for the NN add pruning. These are nice, but most of all I will be looking to implement these on a more sophisticated and real-world dataset. This project was great for the rapid feedback loop and small scale. Ramping up to something more fully fledged is the next step. Definitely more to come.</p>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="simurgh.html">&larr; simurgh</a>
+    <a href="halghe.html">jadid-halghe &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

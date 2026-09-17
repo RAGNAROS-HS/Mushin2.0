@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simurgh — Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Simurgh — classifying whether a chess position is reachable, not merely legal, with a ResNet-20 over 13×8×8 bitboards. ROC AUC 0.9959.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+</head>
+<body style="--pc:#0369a1">
+<div class="page">
+
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="../index.html#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="../index.html#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="../index.html#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
+
+<main class="main">
+
+  <div class="crumbs">$ cd <a href="../index.html#projects">~/projects</a>/simurgh</div>
+
+  <section class="section section--proj">
+    <div class="proj-idx">02</div>
+    <h1 class="name name--proj">Simurgh</h1>
+    <p class="proj-sum">Chess impossibility recognition using a ResNet-20</p>
+    <div class="proj-meta">
+      <span class="status" data-status="complete">complete</span>
+      <span class="tool" data-tool="antigravity">antigravity</span>
+      <span class="tool" data-tool="hand">hand</span>
+      <span>2026-03-13</span>
+      <span class="card-tags"><span>NN</span><span>Chess</span></span>
+    </div>
+  </section>
+
+  <article class="section prose">
+
+    <h2>Overview</h2>
+
+    <p>I know what you are thinking — "oh no, not another chess project." But hear me out.</p>
+
+    <p>While lots of work is dedicated to evaluating positions or legal moves, <strong>I have yet to see a project evaluating possibilities</strong>.</p>
+
+    <p>Chess grandmasters can look at a board and (to some extent) determine whether such a game could exist. Their experience and pattern recognition allow them to assess whether a board state is <strong>possible</strong>. The distinction between <strong>legal</strong> and <strong>possible</strong> is crucial here.</p>
+
+    <blockquote>
+      <p><strong>Key insight:</strong> a state can be legal but unreachable. For example, a specific pawn structure might follow all the rules of chess, but given the turn number, there's no possible sequence of moves that could produce this arrangement.</p>
+    </blockquote>
+
+    <p><strong>Core challenge:</strong> can I create a system that accurately classifies whether a given board state is reachable?</p>
+
+    <h2>Problem Statement</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Aspect</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Task</strong></td><td>Binary classification — determine if a chess board state is possible or unreachable</td></tr>
+        <tr><td><strong>Scope</strong></td><td>Identify states that are legal but unreachable (not structural illegality such as an improper number of pieces)</td></tr>
+        <tr><td><strong>Key inputs</strong></td><td>Board state, turn number</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr>
+
+    <h2>Related Work</h2>
+
+    <p>There exist approaches close to what I'm looking for, most notably retrograde analysis, where one mathematically searches and computes a sequence of moves to reach a given board state. However this is not computationally possible beyond around 25 turns. A similar story can be seen on the other end of the spectrum — chess endgames are a mature area of research, and chess is considered "solved" when there are 7 or fewer pieces on the board. That is not to say there do not exist unreachable arrangements with such piece counts, but my paper will not delve into this area; rather it seeks to amend the mid-game gap between these two fields.</p>
+
+    <p>The problem as a whole is PSPACE-complete. A learned approximator cuts out the long computational process that standard retrograde analysis methods need for each check.</p>
+
+    <h3>Existing Approaches</h3>
+    <ul>
+      <li><strong>Retrograde analysis</strong> — focuses on pawn structure analysis</li>
+      <li><strong>Proof games</strong> — generates a history of how a game reached a position (computationally infeasible at scale)</li>
+      <li><strong>Exhaustive search</strong> — mathematical methods that search all possible game arrangements (again, computationally infeasible at scale)</li>
+    </ul>
+
+    <h3>Key Resources</h3>
+
+    <h4>External links</h4>
+    <ul>
+      <li><a href="http://natch.free.fr/Natch.html">Natch proof game solver</a></li>
+      <li><a href="https://github.com/peterosterlund2/texel/blob/master/doc/proofgame.md">Texel proof game documentation</a></li>
+      <li><a href="https://theses.liacs.nl/pdf/2022-2023-AlwerSaleh.pdf">Chess neural networks research</a></li>
+      <li><a href="https://univ-avignon.hal.science/hal-03483904">Problem size estimation</a></li>
+      <li><a href="https://www.kaggle.com/datasets/alexmolas/chess-960-lichess">Chess 960 Lichess dataset</a> — all back row pieces randomised at start</li>
+      <li><a href="https://github.com/tromp/ChessPositionRanking">ChessPositionRanking</a> — relevant repo with a heuristic-based legality checker</li>
+    </ul>
+
+    <h4>Background papers</h4>
+    <p>Alwer Saleh thesis (2022–2023) · Chess position evaluation using radial basis functions · CNN topologies · ConvChess · End-to-end learning · ImageNet classification · ResNet · Retrograde analysis · Retrograde complexity · The vanishing gradient problem · VGG. <em>(PDFs go in <code>pdfs/</code> — see the README there.)</em></p>
+
+    <h3>Problem Complexity Estimates</h3>
+
+    <p>We know unreachable boards exist, but just how many are there? Thankfully others have calculated this, giving us a good picture of the scale.</p>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Estimate</th><th class="num">Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Shannon's piece-count-respecting estimate</td><td class="num">~4.63 × 10<sup>42</sup></td><td>Correct piece types, ignores illegality</td></tr>
+        <tr><td>Legal diagrams (upper bound, no promotion)</td><td class="num">~4 × 10<sup>37</sup></td><td>Gourion's result</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Meaning there are roughly 100 000 times more possible boards than reachable boards.</p>
+
+    <h2>Dataset</h2>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Type</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Possible states</strong></td><td>Lichess dataset</td></tr>
+        <tr><td><strong>Unreachable states</strong></td><td>Synthetically generated</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Lichess has an enormous amount of data, more than I could ever hope to process. For this project I have taken one single month of the Lichess dataset and processed 100k games. The reasoning for this number will be clear later.</p>
+
+    <h3>Unreachable State Generation</h3>
+
+    <p>Apply perturbations to <strong>reachable</strong> positions (e.g. from simulated or real games) to produce synthetic unreachable states. Core perturbation ideas by category:</p>
+
+    <h4>1. Pawn structure</h4>
+    <ul>
+      <li><strong>Pawn swap</strong> — swap two same-colour pawns on different files (breaks file history).</li>
+      <li><strong>Double pawn</strong> — copy a pawn to an adjacent file so two same-colour pawns share a file.</li>
+      <li><strong>Pawn teleport</strong> — move a pawn to another file or rank without a legal path (e.g. e2→e5 in one step).</li>
+      <li><strong>Wrong count / placement</strong> — add or remove pawns, put a pawn on rank 1/8 (without promotion), or create impossible passed/blocked structures.</li>
+    </ul>
+
+    <h4>2. Turn number</h4>
+    <ul>
+      <li><strong>Turn truncation</strong> — take a position from move 40 and label it as move 10 (or 5); many arrangements are impossible that early.</li>
+      <li><strong>Turn inflation</strong> — label an early-looking position (e.g. many pawns, few pieces moved) as move 60.</li>
+      <li><strong>Minimum-move violation</strong> — set the turn number below the minimum moves needed (e.g. for knights to leave the back rank, or for the given piece layout).</li>
+    </ul>
+
+    <h4>3. Piece mobility / placement</h4>
+    <ul>
+      <li><strong>Knight jump</strong> — move a knight to a non-knight square.</li>
+      <li><strong>Bishop colour</strong> — put a bishop on the wrong colour complex.</li>
+      <li><strong>King in check (illegal last move)</strong> — add or move a piece so the side not to move has their king in check.</li>
+    </ul>
+
+    <h3>Alternative Approaches</h3>
+
+    <p>A potential alternative is simulated chess variant games, for example Chess 960, which randomises the back row. These would naturally tend towards states unreachable in regular chess, however there is no guarantee that, for example, a crazyhouse chess game state would not be reachable via normal chess play. So this approach is falling by the wayside in terms of priority.</p>
+
+    <h2>Data Pipeline</h2>
+
+<pre><code>Lichess PGN database (raw source)
+        │
+        ▼
+Extract metadata ──────────────► games.csv
+        │
+        ▼
+Sample positions (random ply 0–200)
+        │
+        ▼
+Filter minimum pieces (&gt;= 8)
+        │
+        ▼
+Encode bitboards (13×8×8 planes)
+        │
+        ▼
+Split data 50/50
+        ├── first half  ──► keep reachable        (label 1)
+        └── second half ──► apply perturbations   (label 0)
+                    │
+                    ▼
+            Combine dataset
+                    │
+                    ▼
+        Stratified split 80/10/10
+          ├── train.pkl
+          ├── val.pkl
+          └── test.pkl</code></pre>
+
+    <h3>Pipeline Details</h3>
+
+    <p>Since I want to train a neural network, and Lichess downloads in PGN format, I need to make some transformations for the board states to be visible. First of all there is a lot of metadata we do not need, so we strip that; then, as PGN is simply a list of moves, we need to pick a turn number and progress towards it. Usually this would result in a FEN file type, but this is suboptimal for NN training. After skimming some papers it seems like a bitmap is the best representation. Some systems like AlphaZero use a 6-channel bitmap — essentially being colourblind and assuming the board is always rotated to the player — but I want my NN to distinguish between colours, as I'd imagine that gives better depth of understanding and recognition. Also at this stage it needs to be decided how to split the dataset; to the best of my understanding a 50/50 split is ideal, so this is what I aim for, and the perturbed half is further evenly split between the various types. All of this as a whole is divided 80/10/10 into train/test/val; as our data quantity is not an issue we do not need cross-validation or folds.</p>
+
+    <p>To summarise:</p>
+    <ol>
+      <li><strong>Source</strong>: large scale PGN databases from Lichess.</li>
+      <li><strong>Metadata extraction</strong>: key attributes (Elo, result, moves) are extracted to <code>games.csv</code> for distribution analysis.</li>
+      <li><strong>Position sampling</strong>: for each game, a random ply is selected between 0 and 200. Positions with fewer than 8 pieces are rejected (or walked back) to ensure meaningful mid-game content.</li>
+      <li><strong>Bitboard encoding</strong>: positions are converted into a <code>13x8x8</code> numpy array — 12 planes for piece types and colours (white/black P, N, B, R, Q, K) and 1 plane for the normalised turn number (<code>ply / 400</code>).</li>
+      <li><strong>Labelling &amp; balancing</strong>: the dataset of reachable bitboards is split exactly in half. The first half is kept identical as <strong>reachable</strong> (label 1) with perturbation type <code>none</code>. The second half is selectively perturbed to create <strong>unreachable</strong> states (label 0), ensuring the foundational board characteristics (like average Elo or piece count origins) perfectly mirror the reachable dataset. Crucially, each unreachable state also tracks its origin modifier as a <code>perturbation_type</code> sub-label for evaluation analysis.</li>
+      <li><strong>Dataset splits</strong>: the combined data is split into training (80%), validation (10%) and testing (10%) using a stratified approach to maintain the 50/50 reachability ratio across all splits.</li>
+      <li><strong>Storage</strong>: datasets are serialised using <code>pickle</code> to preserve numpy array structures in <code>datasets/</code>.</li>
+    </ol>
+
+    <h3>Dataset Distributions</h3>
+
+    <p>To understand and double-check the characteristics of our training data, we can view its distributions regarding piece count, game length, and player skill.</p>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/piece_count_distribution.png" alt="Piece count distribution"><figcaption>Piece count</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/num_moves_combined.png" alt="Number of moves distribution"><figcaption>Number of moves</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/avg_elo_combined.png" alt="Average Elo distribution"><figcaption>Average Elo</figcaption></figure>
+    </div>
+
+    <details>
+      <summary><strong>Reachable vs unreachable dataset splits</strong></summary>
+      <h4>Piece count</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/piece_count_reachable.png" alt="Piece count, reachable"><figcaption>Reachable</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/piece_count_unreachable.png" alt="Piece count, unreachable"><figcaption>Unreachable</figcaption></figure>
+      </div>
+      <h4>Number of moves</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/num_moves_reachable.png" alt="Number of moves, reachable"><figcaption>Reachable</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/num_moves_unreachable.png" alt="Number of moves, unreachable"><figcaption>Unreachable</figcaption></figure>
+      </div>
+      <h4>Average Elo</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/avg_elo_reachable.png" alt="Average Elo, reachable"><figcaption>Reachable</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/avg_elo_unreachable.png" alt="Average Elo, unreachable"><figcaption>Unreachable</figcaption></figure>
+      </div>
+    </details>
+
+    <p>The synthetic unreachable data is generated by randomly selecting from our list of perturbations, resulting in the following distribution amongst the unreachable dataset portion:</p>
+
+    <div class="figs figs--one">
+      <figure class="fig"><img loading="lazy" src="../img/perturbation_type_distribution.png" alt="Perturbation type distribution"><figcaption>Perturbation type distribution</figcaption></figure>
+    </div>
+
+    <hr>
+
+    <h2>Neural Network Architecture</h2>
+
+    <p>The project uses a custom convolutional neural network inspired by the ResNet-20 architecture, specifically adapted for the spatial dimensions of a chess board. The model processes the 13-channel bitboard to learn deep spatial features and piece relationships. The reason behind selecting this model is the following: data is not an issue, I am able to feed as many games as necessary to propagate an incredibly deep network. I find this depth necessary as the impossibilities are "hidden" in the sense that they are not immediately obvious, and require a deep "understanding" of chess to detect. VGGs are deep but require many more parameters; ResNet maintains the depth while staying relatively small. I'm sure this topology is not the only valid one, but for the literature I've read it seems to be a good starting point.</p>
+
+    <h3>Topology Specifications</h3>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Component</th><th>Specifications</th><th class="num">Output resolution</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Input</strong></td><td>13 channels (12 piece types + 1 turn number), 8×8 grid</td><td class="num">13×8×8</td></tr>
+        <tr><td><strong>Initial conv</strong></td><td>16 filters, 3×3, stride 1, BN, ReLU</td><td class="num">16×8×8</td></tr>
+        <tr><td><strong>Stage 1</strong></td><td>3 ResNet blocks (16 filters, stride 1)</td><td class="num">16×8×8</td></tr>
+        <tr><td><strong>Stage 2</strong></td><td>3 ResNet blocks (32 filters, stride 2 downsampling)</td><td class="num">32×4×4</td></tr>
+        <tr><td><strong>Stage 3</strong></td><td>3 ResNet blocks (64 filters, stride 2 downsampling)</td><td class="num">64×2×2</td></tr>
+        <tr><td><strong>Classifier</strong></td><td>Global average pooling, dense (2 units, softmax)</td><td class="num">2</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h4>ResNet block structure</h4>
+    <p>Each standard residual block applies:</p>
+    <ol>
+      <li>Convolution (3×3, padding "same")</li>
+      <li>Batch normalisation &amp; ReLU</li>
+      <li>Convolution (3×3, padding "same")</li>
+      <li>Batch normalisation</li>
+      <li>Skip connection addition</li>
+      <li>ReLU</li>
+    </ol>
+    <p><em>Note: for blocks that reduce dimensions between stages (stride 2), the skip connection applies a 1×1 convolution with stride 2 and batch normalisation to match the new filter count and spatial size.</em></p>
+
+    <h2>Results &amp; Evaluation</h2>
+
+    <p>Simurgh successfully trained (albeit not for the full 30 epochs), achieving an overall <strong>ROC AUC score of 0.9959</strong>. This result is at a glance extremely promising, so let's take a look to verify.</p>
+
+    <h3>Training Performance</h3>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/training_accuracy.png" alt="Training accuracy"><figcaption>Training accuracy</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/training_loss.png" alt="Training loss"><figcaption>Training loss</figcaption></figure>
+    </div>
+
+    <p>Our training metrics look rock solid, however our validation scores are sawtooth shaped, implying the learning rate was too high or the set was too small. There might be some performance left on the table due to this, so definitely a worthy lesson for next time.</p>
+
+    <h3>Per-Perturbation Analysis</h3>
+
+    <p>Below is a breakdown of the accuracy for each specific problem type.</p>
+
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Category</th><th>Perturbation type</th><th class="num">Count</th><th class="num">Accuracy</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Baseline</strong></td><td>None <em>(reachable)</em></td><td class="num">4987</td><td class="num"><strong>98.24%</strong></td></tr>
+        <tr><td rowspan="3"><strong>Pawn structure</strong></td><td>Capture contradiction</td><td class="num">327</td><td class="num"><strong>99.69%</strong></td></tr>
+        <tr><td>Rank violation</td><td class="num">643</td><td class="num"><strong>99.38%</strong></td></tr>
+        <tr><td>Excess pawns</td><td class="num">621</td><td class="num"><strong>98.55%</strong></td></tr>
+        <tr><td rowspan="2"><strong>Turn number</strong></td><td>Turn inflation</td><td class="num">858</td><td class="num"><strong>99.77%</strong></td></tr>
+        <tr><td>Turn truncation</td><td class="num">854</td><td class="num"><strong>96.84%</strong></td></tr>
+        <tr><td rowspan="3"><strong>Mobility</strong></td><td>Impossible promotion</td><td class="num">586</td><td class="num"><strong>95.22%</strong></td></tr>
+        <tr><td>Bishops same colour</td><td class="num">559</td><td class="num"><strong>93.20%</strong></td></tr>
+        <tr><td>Illegal check</td><td class="num">540</td><td class="num"><strong>87.04%</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h4>Key insights</h4>
+    <ol>
+      <li><strong>Pawn structure violations are obvious.</strong> The network is almost flawless (&gt;98.5%) at noticing impossible pawn configurations, such as pawns sitting on the 1st or 8th rank, contradictory captures needed to reach the file arrangement, or excess pawns. The spatial nature of convolutional networks handles this exceptionally well.</li>
+      <li><strong>Turn flow awareness.</strong> The network has successfully learned to correlate the number of pieces missing and typical piece development with the given turn number dimension. Identifying <em>turn inflation</em> (an overly high turn number given the crowded board) is near-perfect (99.77%). <em>Turn truncation</em> (too few turns for the amount of development/captures) is also highly accurate (96.84%).</li>
+      <li><strong>Complex mobility is the hardest.</strong> Detecting structural impossibilities that require deep backward-logical deduction — such as realising an <em>illegal check</em> sequence (87.04%) or spotting <em>bishops on the same colour</em> (93.20%) — is the model's weakest point. While accuracy is still impressively high, this highlights the difference between learning localised structural rules versus long-term procedural legality.</li>
+    </ol>
+
+    <p>There are some things to note here — one could potentially tweak the severity of these perturbations, for example lowering the number of turns that we truncate or inflate. The reason behind the high values in this project is to ensure impossibility; if one were to delve into less and less obvious perturbations, a source of truth via retrograde analysis would be necessary.</p>
+
+    <h4>Prediction confidence distributions</h4>
+
+    <p>We can visualise the model's prediction confidence spread for each specific type of data (0.0 = completely confident it's unreachable, 1.0 = completely confident it's reachable).</p>
+
+    <details>
+      <summary><strong>Prediction distribution plots for each perturbation type</strong></summary>
+      <h4>Baseline (reachable)</h4>
+      <div class="figs figs--one">
+        <figure class="fig"><img loading="lazy" src="../img/predictions_none.png" alt="Predictions, none"><figcaption>None</figcaption></figure>
+      </div>
+      <h4>Pawn structure</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/predictions_pawn_structure_capture_contradiction.png" alt="Predictions, capture contradiction"><figcaption>Capture contradiction</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/predictions_pawn_structure_rank_violation.png" alt="Predictions, rank violation"><figcaption>Rank violation</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/predictions_pawn_structure_excess_pawns.png" alt="Predictions, excess pawns"><figcaption>Excess pawns</figcaption></figure>
+      </div>
+      <h4>Turn number</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/predictions_turn_number_inflation.png" alt="Predictions, turn inflation"><figcaption>Turn inflation</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/predictions_turn_number_truncation.png" alt="Predictions, turn truncation"><figcaption>Turn truncation</figcaption></figure>
+      </div>
+      <h4>Mobility</h4>
+      <div class="figs">
+        <figure class="fig"><img loading="lazy" src="../img/predictions_mobility_impossible_promotion.png" alt="Predictions, impossible promotion"><figcaption>Impossible promotion</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/predictions_mobility_bishops_same_color.png" alt="Predictions, bishops same colour"><figcaption>Bishops same colour</figcaption></figure>
+        <figure class="fig"><img loading="lazy" src="../img/predictions_mobility_illegal_check.png" alt="Predictions, illegal check"><figcaption>Illegal check</figcaption></figure>
+      </div>
+    </details>
+
+    <h4>Ply vs confidence</h4>
+
+    <p>By mapping the prediction confidence over the course of the turn number (ply), we can see how the model's certainty evolves as games go deeper.</p>
+
+    <div class="figs figs--one">
+      <figure class="fig"><img loading="lazy" src="../img/ply_perturbation_comparison.png" alt="Ply comparison, general"><figcaption>Ply vs confidence, all perturbations</figcaption></figure>
+    </div>
+
+    <p>Specifically, observing the turn number perturbations shows how the model handles states with incorrect turn numbers over the progression of a match.</p>
+
+    <div class="figs">
+      <figure class="fig"><img loading="lazy" src="../img/ply_perturbation_comparison_turn_number_inflation.png" alt="Ply comparison, turn inflation"><figcaption>Turn inflation</figcaption></figure>
+      <figure class="fig"><img loading="lazy" src="../img/ply_perturbation_comparison_turn_number_truncation.png" alt="Ply comparison, turn truncation"><figcaption>Turn truncation</figcaption></figure>
+    </div>
+
+    <h3>Aggregate Evaluation Metrics</h3>
+
+    <p>To visualise the model's holistic performance, the confusion matrix and overall metrics distributions summarise its test set precision, recall, and decision boundaries.</p>
+
+    <div class="figs figs--one">
+      <figure class="fig"><img loading="lazy" src="../img/confusion_matrix.png" alt="Confusion matrix"><figcaption>Confusion matrix</figcaption></figure>
+    </div>
+
+    <hr>
+
+    <p>This just about concludes the project. Many precise details and decisions were not included in this description; doing that would balloon the document to thesis size. For now this is not on my radar, but maybe eventually I'll get around to formatting it in LaTeX and providing a fully fledged description.</p>
+
+    <p>Whatever the case — I think I've taken an interesting step into tackling a niche problem using an industry standard but previously unattempted (in this realm) solution. All with solid results, and room for future improvement.</p>
+
+    <h2>Potential Future Goals</h2>
+    <ul class="tasks">
+      <li>Turn into a LaTeX doc</li>
+      <li>Create a web interface for position evaluation</li>
+      <li>Deploy as a hosted website for public access</li>
+    </ul>
+
+  </article>
+
+  <nav class="proj-nav">
+    <a href="../index.html#projects">&larr; <span data-i18n="back">back to projects</span></a>
+    <span class="grow"></span>
+    <a href="stumberg.html">&larr; stumberg</a>
+    <a href="zamin.html">zamin &rarr;</a>
+  </nav>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="../app.js?v=2"></script>
+</body>
+</html>

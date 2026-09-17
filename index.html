@@ -1,45 +1,278 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-root="">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hugo Katzer</title>
-
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            background: #f4f1e8;
-            color: #111;
-
-            font-family: Georgia, serif;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: normal;
-            margin: 0;
-        }
-
-        p {
-            font-size: 1.2rem;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hugo Sokołowski-Katzer</title>
+<meta name="description" content="Hugo Sokołowski-Katzer — infrastructure engineering. IT and information security operations, self-hosted Linux infrastructure, MSc AI student.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13' font-family='monospace'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=2">
+<script>
+// Set the theme before first paint so there is no flash of the wrong palette.
+(function () {
+  var t;
+  try { t = localStorage.getItem("hsk.theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
 </head>
-
 <body>
+<div class="page">
 
-    <main>
-        <h1>Under renovation</h1>
-        <p>Check back in later.</p>
-    </main>
+<header class="bar">
+  <span class="host">hsk@infra</span>
+  <nav class="nav">
+    <a href="#whoami">[<span data-i18n="n1">whoami</span>]</a>
+    <a href="#timeline">[<span data-i18n="n2">timeline</span>]</a>
+    <a href="#projects">[<span data-i18n="n3">projects</span>]</a>
+  </nav>
+  <span class="grow"></span>
+  <div class="langs">
+    <button type="button" class="lang is-on" data-lang="en" aria-pressed="true">EN</button>
+    <span class="slash">/</span>
+    <button type="button" class="lang" data-lang="pl" aria-pressed="false">PL</button>
+  </div>
+  <button type="button" class="theme-toggle" id="theme-toggle">[dark]</button>
+</header>
 
+<main class="main">
+
+  <section id="whoami" class="section section--hero">
+    <div class="prompt">$ whoami</div>
+    <h1 class="name">Hugo<br>Sokołowski-Katzer</h1>
+    <div class="ruled-row">
+      <span data-i18n="role">infrastructure engineering</span>
+      <span class="rule rule--dashed"></span>
+      <span>Europe/Amsterdam</span>
+    </div>
+    <p class="bio" data-i18n="bio">Two years of IT and information security operations, moving into infrastructure engineering. Identity lifecycle, disaster recovery testing and incident response in production, plus self-hosted Linux infrastructure I provision, harden and run myself. MSc AI student preparing for LFCS and CKA, drawn to systems that report healthy while quietly producing degraded output.</p>
+
+    <div class="cells">
+      <a class="cell" href="https://github.com/RAGNAROS-HS"><span>github</span><span class="dim">/RAGNAROS-HS &rarr;</span></a>
+      <a class="cell" href="https://www.linkedin.com/in/hugo-sokolowski-katzer-715577248/"><span>linkedin</span><span class="dim">/in/hugo-s-k &rarr;</span></a>
+      <a class="cell" href="mailto:hugo.s.katzer@gmail.com"><span>mail</span><span class="dim">hugo.s.katzer@ &rarr;</span></a>
+      <a class="cell" id="cv-link" href="pdfs/CV2_0.pdf"><span data-i18n="cv">resume</span><span class="dim">.pdf &rarr;</span></a>
+    </div>
+  </section>
+
+  <section id="timeline" class="section">
+    <div class="sec-head">
+      <span class="prompt">$ tree ~/career</span>
+      <span class="rule rule--dashed"></span>
+      <span class="prompt" data-i18n="n2">timeline</span>
+    </div>
+
+    <div class="tree">
+      <div class="row row--head">
+        <span class="pre">~/career/</span>
+        <div class="row-line"><span class="label"></span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b1">work/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r1">Data, Automation &amp; AI Intern</span><span class="rule rule--dotted"></span><span class="meta">Talk360 · Amsterdam</span><span class="when" data-i18n="w1">apr 2026 – june 2026</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r2">AI Team</span><span class="rule rule--dotted"></span><span class="meta">Futurist Law Lab · Amsterdam</span><span class="when" data-i18n="w2">feb 2026 – may 2026</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r3">Information Security Intern</span><span class="rule rule--dotted"></span><span class="meta">Swapfiets · Amsterdam</span><span class="when" data-i18n="w3">jun 2025 – jul 2025</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r4">IT Intern</span><span class="rule rule--dotted"></span><span class="meta">Swapfiets · Amsterdam</span><span class="when" data-i18n="w4">jun 2024 – may 2025</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="r5">Shop Assistant</span><span class="rule rule--dotted"></span><span class="meta">VU Amsterdam SPAR</span><span class="when" data-i18n="w5">jan 2024 – jun 2024</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="r6">Housekeeper</span><span class="rule rule--dotted"></span><span class="meta">Radisson Hotel &amp; Suites Amsterdam South</span><span class="when" data-i18n="w6">jul 2023 – aug 2023</span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b2">education/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="e1">MSc Artificial Intelligence</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em1">AI for Health · VU / UvA</span><span class="when" data-i18n="ew">in progress</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="e2">BSc Computer Science</span><span class="rule rule--dotted"></span><span class="meta">Vrije Universiteit Amsterdam</span><span class="when" data-i18n="ew2">completed</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="e3">Secondary school</span><span class="rule rule--dotted"></span><span class="meta" data-i18n="em3">K. I. Gałczyński School · Olsztyn, PL</span><span class="when" data-i18n="ew2">completed</span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b3">certs/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="c1">LFCS</span><span class="rule rule--dotted"></span><span class="meta">Linux Foundation</span><span class="when" data-i18n="cw">preparing</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="c2">CKA</span><span class="rule rule--dotted"></span><span class="meta">CNCF</span><span class="when" data-i18n="cw">preparing</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="c3">UAV Operator Certificate</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="c4">Motorboat Helmsman</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="c5">WOPR 2nd Degree Lifeguard</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">├── </span>
+        <div class="row-line"><span class="label" data-i18n="b4">languages/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="l1">Polish</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw1">native</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   ├── </span>
+        <div class="row-line"><span class="label" data-i18n="l2">English</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw2">Cambridge C2, grade A</span></div>
+      </div>
+      <div class="row">
+        <span class="pre">│   └── </span>
+        <div class="row-line"><span class="label" data-i18n="l3">German</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when" data-i18n="lw3">DSD Stufe II, C1</span></div>
+      </div>
+      <div class="row row--head"><span class="pre">│</span><div class="row-line"></div></div>
+
+      <div class="row row--head">
+        <span class="pre">└── </span>
+        <div class="row-line"><span class="label" data-i18n="b5">infra/</span><span class="rule rule--dotted"></span><span class="meta"></span><span class="when"></span></div>
+      </div>
+      <div class="row">
+        <span class="pre">    └── </span>
+        <div class="row-line"><span class="label" data-i18n="i1">Self-hosted Linux infrastructure</span><span class="rule rule--dotted"></span><span class="meta">bare metal</span><span class="when" data-i18n="iw">provision · harden · maintain</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" class="section section--last">
+    <div class="sec-head">
+      <span class="prompt">$ ls ~/projects</span>
+      <span class="rule rule--dashed"></span>
+      <span class="prompt" id="projects-count">9 entries</span>
+    </div>
+    <div class="cells cells--cards" id="projects-grid">
+
+      <a class="card" href="projects/stumberg.html" style="--pc:#6366f1">
+        <div class="card-top"><span>01</span><span class="status" data-status="discontinued">discontinued</span></div>
+        <div class="card-slug">stumberg/</div>
+        <div class="card-desc" data-i18n="p1">Personal AI agent — LangGraph, four modes, persistent threads</div>
+        <div class="card-tags"><span>ML</span><span>Python</span><span>AI</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2025-12-03</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/simurgh.html" style="--pc:#0369a1">
+        <div class="card-top"><span>02</span><span class="status" data-status="complete">complete</span></div>
+        <div class="card-slug">simurgh/</div>
+        <div class="card-desc" data-i18n="p2">Chess impossibility recognition using a ResNet-20</div>
+        <div class="card-tags"><span>NN</span><span>Chess</span></div>
+        <div class="card-foot"><span class="tool" data-tool="antigravity">antigravity</span><span class="grow"></span><span>2026-03-13</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/zamin.html" style="--pc:#059669">
+        <div class="card-top"><span>03</span><span class="status" data-status="active">active</span></div>
+        <div class="card-slug">zamin/</div>
+        <div class="card-desc" data-i18n="p3">Back to basics: ML algorithms written from scratch</div>
+        <div class="card-tags"><span>NN</span><span>Python</span><span>Linear Regression</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-02-11</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/halghe.html" style="--pc:#7c3aed">
+        <div class="card-top"><span>04</span><span class="status" data-status="active">active</span></div>
+        <div class="card-slug">jadid-halghe/</div>
+        <div class="card-desc" data-i18n="p4">Teaching RL agents to dominate an agar.io clone</div>
+        <div class="card-tags"><span>RL</span><span>Python</span><span>PyTorch</span><span>Game Engine</span></div>
+        <div class="card-foot"><span class="tool" data-tool="claude-code">claude-code</span><span class="grow"></span><span>2026-04-05</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/tosach.html" style="--pc:#d97706">
+        <div class="card-top"><span>05</span><span class="status" data-status="limbo">limbo</span></div>
+        <div class="card-slug">tosach/</div>
+        <div class="card-desc" data-i18n="p5">Scene text recognition with a CRNN</div>
+        <div class="card-tags"><span>ML</span><span>Python</span><span>AI</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-27</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/goswin.html" style="--pc:#374151">
+        <div class="card-top"><span>06</span><span class="status" data-status="active">active</span></div>
+        <div class="card-slug">goswin/</div>
+        <div class="card-desc" data-i18n="p6">n8n workflow automation, kept off GitHub</div>
+        <div class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-10</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/mushin.html" style="--pc:#b45309">
+        <div class="card-top"><span>07</span><span class="status" data-status="active">active</span></div>
+        <div class="card-slug">mushin/</div>
+        <div class="card-desc" data-i18n="p7">This very website</div>
+        <div class="card-tags"><span>Go</span><span>Hugo</span><span>GitHub</span></div>
+        <div class="card-foot"><span class="tool" data-tool="claude-code">claude-code</span><span class="grow"></span><span>2026-02-23</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/himantes.html" style="--pc:#db2777">
+        <div class="card-top"><span>08</span><span class="status" data-status="abandoned">abandoned</span></div>
+        <div class="card-slug">himantes/</div>
+        <div class="card-desc" data-i18n="p8">Pokémon type classifier and generator</div>
+        <div class="card-tags"><span>CNN</span><span>GAN</span><span>PyTorch</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2026-01-22</span><span>&rarr;</span></div>
+      </a>
+
+      <a class="card" href="projects/bachelor-thesis.html" style="--pc:#475569">
+        <div class="card-top"><span>09</span><span class="status" data-status="complete">complete</span></div>
+        <div class="card-slug">bachelor-thesis/</div>
+        <div class="card-desc" data-i18n="p9">Detecting collapsed buildings with UNET++</div>
+        <div class="card-tags"><span>CNN</span><span>Pytorch</span><span>VertexAI</span></div>
+        <div class="card-foot"><span class="tool" data-tool="hand">hand</span><span class="grow"></span><span>2025-06-01</span><span>&rarr;</span></div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<div class="console" id="console">
+  <div class="console-out" id="console-out" hidden></div>
+  <div class="console-in">
+    <span class="dim">$</span>
+    <input id="console-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
+           aria-label="command" data-i18n-placeholder="hint" placeholder="type `help`">
+    <span class="caret" aria-hidden="true"></span>
+  </div>
+</div>
+
+</div>
+<script src="app.js?v=2"></script>
 </body>
 </html>
-
