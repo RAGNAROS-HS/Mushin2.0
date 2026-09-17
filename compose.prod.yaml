@@ -1,0 +1,6 @@
+services:
+  site:
+    image: ghcr.io/ragnaros-hs/mushin2.0:latest
+    port:
+      - "3000:80"
+    restart: unless-stopped
