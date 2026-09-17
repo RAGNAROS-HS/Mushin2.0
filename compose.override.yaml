@@ -2,3 +2,8 @@ services:
   site:
     volumes:
       - .:/usr/share/nginx/html
+
+#this yaml auto merges upon compose up, poking a hole in the container and mounting the hosts filesystem. This is so that rapid devlopment can occur.
+#if you want to avoid this and go straight to staging you need to manually flag it in the command:
+#docker compose -f compose.yaml up -d --build
+#this line specifically lists on the regular compose.yaml to be merged and ran
